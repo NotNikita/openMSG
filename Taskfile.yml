@@ -1,0 +1,18 @@
+version: "3"
+
+tasks:
+  up:
+    desc: Start all services
+    cmd: docker compose up --build -d
+
+  down:
+    desc: Stop all services
+    cmd: docker compose down
+
+  migrate:
+    desc: Run database migrations
+    cmd: docker compose exec postgres psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f /docker-entrypoint-initdb.d/001_init.sql
+
+  logs:
+    desc: Tail logs for all services
+    cmd: docker compose logs -f
