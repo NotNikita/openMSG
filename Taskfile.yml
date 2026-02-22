@@ -16,3 +16,23 @@ tasks:
   logs:
     desc: Tail logs for all services
     cmd: docker compose logs -f
+
+  sqlc:
+    desc: Regenerate sqlc type-safe query code from queries.sql
+    dir: backend
+    cmd: sqlc generate
+
+  generate:
+    desc: Generate minimock mocks from repository interfaces
+    dir: backend
+    cmd: go generate ./internal/repository/...
+
+  test:
+    desc: Run backend unit tests
+    dir: backend
+    cmd: go test ./internal/service/... -v
+
+  build:
+    desc: Build the Go backend binary
+    dir: backend
+    cmd: go build -o bin/server ./cmd/server
