@@ -14,7 +14,7 @@ import (
 type UserRepository interface {
 	Create(ctx context.Context, nickname, publicKey, avatar string) (*models.User, error)
 	GetByID(ctx context.Context, id string) (*models.User, error)
-	GetAll(ctx context.Context) ([]models.User, error)
+	GetAll(ctx context.Context, limit, offset int) ([]models.User, error)
 }
 
 type postgresUserRepository struct {
@@ -48,8 +48,11 @@ func (r *postgresUserRepository) GetByID(ctx context.Context, id string) (*model
 	return toUser(row), nil
 }
 
-func (r *postgresUserRepository) GetAll(ctx context.Context) ([]models.User, error) {
-	rows, err := r.q.GetAllUsers(ctx)
+func (r *postgresUserRepository) GetAll(ctx context.Context, limit, offset int) ([]models.User, error) {
+	rows, err := r.q.GetAllUsers(ctx, &sqlcgen.GetAllUsersParams{
+		Limit:  int32(limit),
+		Offset: int32(offset),
+	})
 	if err != nil {
 		return nil, err
 	}

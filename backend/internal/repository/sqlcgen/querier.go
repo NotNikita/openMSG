@@ -11,12 +11,12 @@ import (
 type Querier interface {
 	CreateMessage(ctx context.Context, arg *CreateMessageParams) (*Message, error)
 	CreateUser(ctx context.Context, arg *CreateUserParams) (*User, error)
-	GetAllUsers(ctx context.Context) ([]*User, error)
+	GetAllUsers(ctx context.Context, arg *GetAllUsersParams) ([]*User, error)
 	GetConversationByID(ctx context.Context, id string) (*Conversation, error)
 	GetConversationsByUserID(ctx context.Context, userAID string) ([]*Conversation, error)
 	GetMessagesByConversationID(ctx context.Context, conversationID string) ([]*Message, error)
 	GetOrCreateConversation(ctx context.Context, arg *GetOrCreateConversationParams) (*Conversation, error)
-	GetPublicMessages(ctx context.Context) ([]*GetPublicMessagesRow, error)
+	GetPublicMessages(ctx context.Context, arg *GetPublicMessagesParams) ([]*GetPublicMessagesRow, error)
 	GetUserByID(ctx context.Context, id string) (*User, error)
 }
 

@@ -74,6 +74,42 @@ func TestMessageService_SendMessage(t *testing.T) {
 	})
 }
 
+func TestMessageService_ListPublicMessages(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("first page (no cursor)", func(t *testing.T) {
+		repo := mocks.NewMessageRepositoryMock(t)
+		repo.GetPublicMock.Expect(ctx, 100, (*time.Time)(nil)).
+			Return([]models.PublicMessage{{SenderNickname: "alice"}}, nil)
+
+		svc := service.NewMessageService(repo)
+		msgs, err := svc.ListPublicMessages(ctx, 100, nil)
+
+		require.NoError(t, err)
+		assert.Len(t, msgs, 1)
+	})
+
+	t.Run("with cursor", func(t *testing.T) {
+		cursor := time.Now()
+		repo := mocks.NewMessageRepositoryMock(t)
+		repo.GetPublicMock.Expect(ctx, 50, &cursor).
+			Return([]models.PublicMessage{}, nil)
+
+		svc := service.NewMessageService(repo)
+		_, err := svc.ListPublicMessages(ctx, 50, &cursor)
+		require.NoError(t, err)
+	})
+
+	t.Run("clamps limit above 100 to 100", func(t *testing.T) {
+		repo := mocks.NewMessageRepositoryMock(t)
+		repo.GetPublicMock.Expect(ctx, 100, (*time.Time)(nil)).Return([]models.PublicMessage{}, nil)
+
+		svc := service.NewMessageService(repo)
+		_, err := svc.ListPublicMessages(ctx, 500, nil)
+		require.NoError(t, err)
+	})
+}
+
 func TestMessageService_ListMessages(t *testing.T) {
 	ctx := context.Background()
 

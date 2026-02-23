@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"strconv"
+
 	"app/internal/models"
 	"app/internal/service"
 
@@ -44,7 +46,16 @@ func (h *UserHandler) GetByID(c *fiber.Ctx) error {
 }
 
 func (h *UserHandler) List(c *fiber.Ctx) error {
-	users, err := h.svc.ListUsers(c.Context())
+	limit, _ := strconv.Atoi(c.Query("limit", "100"))
+	if limit <= 0 || limit > 100 {
+		limit = 100
+	}
+	offset, _ := strconv.Atoi(c.Query("offset", "0"))
+	if offset < 0 {
+		offset = 0
+	}
+
+	users, err := h.svc.ListUsers(c.Context(), limit, offset)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}

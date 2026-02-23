@@ -26,9 +26,9 @@ type UserRepositoryMock struct {
 	beforeCreateCounter uint64
 	CreateMock          mUserRepositoryMockCreate
 
-	funcGetAll          func(ctx context.Context) (ua1 []models.User, err error)
+	funcGetAll          func(ctx context.Context, limit int, offset int) (ua1 []models.User, err error)
 	funcGetAllOrigin    string
-	inspectFuncGetAll   func(ctx context.Context)
+	inspectFuncGetAll   func(ctx context.Context, limit int, offset int)
 	afterGetAllCounter  uint64
 	beforeGetAllCounter uint64
 	GetAllMock          mUserRepositoryMockGetAll
@@ -494,12 +494,16 @@ type UserRepositoryMockGetAllExpectation struct {
 
 // UserRepositoryMockGetAllParams contains parameters of the UserRepository.GetAll
 type UserRepositoryMockGetAllParams struct {
-	ctx context.Context
+	ctx    context.Context
+	limit  int
+	offset int
 }
 
 // UserRepositoryMockGetAllParamPtrs contains pointers to parameters of the UserRepository.GetAll
 type UserRepositoryMockGetAllParamPtrs struct {
-	ctx *context.Context
+	ctx    *context.Context
+	limit  *int
+	offset *int
 }
 
 // UserRepositoryMockGetAllResults contains results of the UserRepository.GetAll
@@ -510,8 +514,10 @@ type UserRepositoryMockGetAllResults struct {
 
 // UserRepositoryMockGetAllOrigins contains origins of expectations of the UserRepository.GetAll
 type UserRepositoryMockGetAllExpectationOrigins struct {
-	origin    string
-	originCtx string
+	origin       string
+	originCtx    string
+	originLimit  string
+	originOffset string
 }
 
 // Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
@@ -525,7 +531,7 @@ func (mmGetAll *mUserRepositoryMockGetAll) Optional() *mUserRepositoryMockGetAll
 }
 
 // Expect sets up expected params for UserRepository.GetAll
-func (mmGetAll *mUserRepositoryMockGetAll) Expect(ctx context.Context) *mUserRepositoryMockGetAll {
+func (mmGetAll *mUserRepositoryMockGetAll) Expect(ctx context.Context, limit int, offset int) *mUserRepositoryMockGetAll {
 	if mmGetAll.mock.funcGetAll != nil {
 		mmGetAll.mock.t.Fatalf("UserRepositoryMock.GetAll mock is already set by Set")
 	}
@@ -538,7 +544,7 @@ func (mmGetAll *mUserRepositoryMockGetAll) Expect(ctx context.Context) *mUserRep
 		mmGetAll.mock.t.Fatalf("UserRepositoryMock.GetAll mock is already set by ExpectParams functions")
 	}
 
-	mmGetAll.defaultExpectation.params = &UserRepositoryMockGetAllParams{ctx}
+	mmGetAll.defaultExpectation.params = &UserRepositoryMockGetAllParams{ctx, limit, offset}
 	mmGetAll.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
 	for _, e := range mmGetAll.expectations {
 		if minimock.Equal(e.params, mmGetAll.defaultExpectation.params) {
@@ -572,8 +578,54 @@ func (mmGetAll *mUserRepositoryMockGetAll) ExpectCtxParam1(ctx context.Context) 
 	return mmGetAll
 }
 
+// ExpectLimitParam2 sets up expected param limit for UserRepository.GetAll
+func (mmGetAll *mUserRepositoryMockGetAll) ExpectLimitParam2(limit int) *mUserRepositoryMockGetAll {
+	if mmGetAll.mock.funcGetAll != nil {
+		mmGetAll.mock.t.Fatalf("UserRepositoryMock.GetAll mock is already set by Set")
+	}
+
+	if mmGetAll.defaultExpectation == nil {
+		mmGetAll.defaultExpectation = &UserRepositoryMockGetAllExpectation{}
+	}
+
+	if mmGetAll.defaultExpectation.params != nil {
+		mmGetAll.mock.t.Fatalf("UserRepositoryMock.GetAll mock is already set by Expect")
+	}
+
+	if mmGetAll.defaultExpectation.paramPtrs == nil {
+		mmGetAll.defaultExpectation.paramPtrs = &UserRepositoryMockGetAllParamPtrs{}
+	}
+	mmGetAll.defaultExpectation.paramPtrs.limit = &limit
+	mmGetAll.defaultExpectation.expectationOrigins.originLimit = minimock.CallerInfo(1)
+
+	return mmGetAll
+}
+
+// ExpectOffsetParam3 sets up expected param offset for UserRepository.GetAll
+func (mmGetAll *mUserRepositoryMockGetAll) ExpectOffsetParam3(offset int) *mUserRepositoryMockGetAll {
+	if mmGetAll.mock.funcGetAll != nil {
+		mmGetAll.mock.t.Fatalf("UserRepositoryMock.GetAll mock is already set by Set")
+	}
+
+	if mmGetAll.defaultExpectation == nil {
+		mmGetAll.defaultExpectation = &UserRepositoryMockGetAllExpectation{}
+	}
+
+	if mmGetAll.defaultExpectation.params != nil {
+		mmGetAll.mock.t.Fatalf("UserRepositoryMock.GetAll mock is already set by Expect")
+	}
+
+	if mmGetAll.defaultExpectation.paramPtrs == nil {
+		mmGetAll.defaultExpectation.paramPtrs = &UserRepositoryMockGetAllParamPtrs{}
+	}
+	mmGetAll.defaultExpectation.paramPtrs.offset = &offset
+	mmGetAll.defaultExpectation.expectationOrigins.originOffset = minimock.CallerInfo(1)
+
+	return mmGetAll
+}
+
 // Inspect accepts an inspector function that has same arguments as the UserRepository.GetAll
-func (mmGetAll *mUserRepositoryMockGetAll) Inspect(f func(ctx context.Context)) *mUserRepositoryMockGetAll {
+func (mmGetAll *mUserRepositoryMockGetAll) Inspect(f func(ctx context.Context, limit int, offset int)) *mUserRepositoryMockGetAll {
 	if mmGetAll.mock.inspectFuncGetAll != nil {
 		mmGetAll.mock.t.Fatalf("Inspect function is already set for UserRepositoryMock.GetAll")
 	}
@@ -598,7 +650,7 @@ func (mmGetAll *mUserRepositoryMockGetAll) Return(ua1 []models.User, err error) 
 }
 
 // Set uses given function f to mock the UserRepository.GetAll method
-func (mmGetAll *mUserRepositoryMockGetAll) Set(f func(ctx context.Context) (ua1 []models.User, err error)) *UserRepositoryMock {
+func (mmGetAll *mUserRepositoryMockGetAll) Set(f func(ctx context.Context, limit int, offset int) (ua1 []models.User, err error)) *UserRepositoryMock {
 	if mmGetAll.defaultExpectation != nil {
 		mmGetAll.mock.t.Fatalf("Default expectation is already set for the UserRepository.GetAll method")
 	}
@@ -614,14 +666,14 @@ func (mmGetAll *mUserRepositoryMockGetAll) Set(f func(ctx context.Context) (ua1 
 
 // When sets expectation for the UserRepository.GetAll which will trigger the result defined by the following
 // Then helper
-func (mmGetAll *mUserRepositoryMockGetAll) When(ctx context.Context) *UserRepositoryMockGetAllExpectation {
+func (mmGetAll *mUserRepositoryMockGetAll) When(ctx context.Context, limit int, offset int) *UserRepositoryMockGetAllExpectation {
 	if mmGetAll.mock.funcGetAll != nil {
 		mmGetAll.mock.t.Fatalf("UserRepositoryMock.GetAll mock is already set by Set")
 	}
 
 	expectation := &UserRepositoryMockGetAllExpectation{
 		mock:               mmGetAll.mock,
-		params:             &UserRepositoryMockGetAllParams{ctx},
+		params:             &UserRepositoryMockGetAllParams{ctx, limit, offset},
 		expectationOrigins: UserRepositoryMockGetAllExpectationOrigins{origin: minimock.CallerInfo(1)},
 	}
 	mmGetAll.expectations = append(mmGetAll.expectations, expectation)
@@ -656,17 +708,17 @@ func (mmGetAll *mUserRepositoryMockGetAll) invocationsDone() bool {
 }
 
 // GetAll implements mm_repository.UserRepository
-func (mmGetAll *UserRepositoryMock) GetAll(ctx context.Context) (ua1 []models.User, err error) {
+func (mmGetAll *UserRepositoryMock) GetAll(ctx context.Context, limit int, offset int) (ua1 []models.User, err error) {
 	mm_atomic.AddUint64(&mmGetAll.beforeGetAllCounter, 1)
 	defer mm_atomic.AddUint64(&mmGetAll.afterGetAllCounter, 1)
 
 	mmGetAll.t.Helper()
 
 	if mmGetAll.inspectFuncGetAll != nil {
-		mmGetAll.inspectFuncGetAll(ctx)
+		mmGetAll.inspectFuncGetAll(ctx, limit, offset)
 	}
 
-	mm_params := UserRepositoryMockGetAllParams{ctx}
+	mm_params := UserRepositoryMockGetAllParams{ctx, limit, offset}
 
 	// Record call args
 	mmGetAll.GetAllMock.mutex.Lock()
@@ -685,13 +737,23 @@ func (mmGetAll *UserRepositoryMock) GetAll(ctx context.Context) (ua1 []models.Us
 		mm_want := mmGetAll.GetAllMock.defaultExpectation.params
 		mm_want_ptrs := mmGetAll.GetAllMock.defaultExpectation.paramPtrs
 
-		mm_got := UserRepositoryMockGetAllParams{ctx}
+		mm_got := UserRepositoryMockGetAllParams{ctx, limit, offset}
 
 		if mm_want_ptrs != nil {
 
 			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
 				mmGetAll.t.Errorf("UserRepositoryMock.GetAll got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
 					mmGetAll.GetAllMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.limit != nil && !minimock.Equal(*mm_want_ptrs.limit, mm_got.limit) {
+				mmGetAll.t.Errorf("UserRepositoryMock.GetAll got unexpected parameter limit, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetAll.GetAllMock.defaultExpectation.expectationOrigins.originLimit, *mm_want_ptrs.limit, mm_got.limit, minimock.Diff(*mm_want_ptrs.limit, mm_got.limit))
+			}
+
+			if mm_want_ptrs.offset != nil && !minimock.Equal(*mm_want_ptrs.offset, mm_got.offset) {
+				mmGetAll.t.Errorf("UserRepositoryMock.GetAll got unexpected parameter offset, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetAll.GetAllMock.defaultExpectation.expectationOrigins.originOffset, *mm_want_ptrs.offset, mm_got.offset, minimock.Diff(*mm_want_ptrs.offset, mm_got.offset))
 			}
 
 		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
@@ -706,9 +768,9 @@ func (mmGetAll *UserRepositoryMock) GetAll(ctx context.Context) (ua1 []models.Us
 		return (*mm_results).ua1, (*mm_results).err
 	}
 	if mmGetAll.funcGetAll != nil {
-		return mmGetAll.funcGetAll(ctx)
+		return mmGetAll.funcGetAll(ctx, limit, offset)
 	}
-	mmGetAll.t.Fatalf("Unexpected call to UserRepositoryMock.GetAll. %v", ctx)
+	mmGetAll.t.Fatalf("Unexpected call to UserRepositoryMock.GetAll. %v %v %v", ctx, limit, offset)
 	return
 }
 

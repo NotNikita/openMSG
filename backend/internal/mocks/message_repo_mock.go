@@ -9,6 +9,7 @@ import (
 	"context"
 	"sync"
 	mm_atomic "sync/atomic"
+	"time"
 	mm_time "time"
 
 	"github.com/gojuno/minimock/v3"
@@ -33,9 +34,9 @@ type MessageRepositoryMock struct {
 	beforeGetByConversationIDCounter uint64
 	GetByConversationIDMock          mMessageRepositoryMockGetByConversationID
 
-	funcGetPublic          func(ctx context.Context) (pa1 []models.PublicMessage, err error)
+	funcGetPublic          func(ctx context.Context, limit int, before *time.Time) (pa1 []models.PublicMessage, err error)
 	funcGetPublicOrigin    string
-	inspectFuncGetPublic   func(ctx context.Context)
+	inspectFuncGetPublic   func(ctx context.Context, limit int, before *time.Time)
 	afterGetPublicCounter  uint64
 	beforeGetPublicCounter uint64
 	GetPublicMock          mMessageRepositoryMockGetPublic
@@ -868,12 +869,16 @@ type MessageRepositoryMockGetPublicExpectation struct {
 
 // MessageRepositoryMockGetPublicParams contains parameters of the MessageRepository.GetPublic
 type MessageRepositoryMockGetPublicParams struct {
-	ctx context.Context
+	ctx    context.Context
+	limit  int
+	before *time.Time
 }
 
 // MessageRepositoryMockGetPublicParamPtrs contains pointers to parameters of the MessageRepository.GetPublic
 type MessageRepositoryMockGetPublicParamPtrs struct {
-	ctx *context.Context
+	ctx    *context.Context
+	limit  *int
+	before **time.Time
 }
 
 // MessageRepositoryMockGetPublicResults contains results of the MessageRepository.GetPublic
@@ -884,8 +889,10 @@ type MessageRepositoryMockGetPublicResults struct {
 
 // MessageRepositoryMockGetPublicOrigins contains origins of expectations of the MessageRepository.GetPublic
 type MessageRepositoryMockGetPublicExpectationOrigins struct {
-	origin    string
-	originCtx string
+	origin       string
+	originCtx    string
+	originLimit  string
+	originBefore string
 }
 
 // Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
@@ -899,7 +906,7 @@ func (mmGetPublic *mMessageRepositoryMockGetPublic) Optional() *mMessageReposito
 }
 
 // Expect sets up expected params for MessageRepository.GetPublic
-func (mmGetPublic *mMessageRepositoryMockGetPublic) Expect(ctx context.Context) *mMessageRepositoryMockGetPublic {
+func (mmGetPublic *mMessageRepositoryMockGetPublic) Expect(ctx context.Context, limit int, before *time.Time) *mMessageRepositoryMockGetPublic {
 	if mmGetPublic.mock.funcGetPublic != nil {
 		mmGetPublic.mock.t.Fatalf("MessageRepositoryMock.GetPublic mock is already set by Set")
 	}
@@ -912,7 +919,7 @@ func (mmGetPublic *mMessageRepositoryMockGetPublic) Expect(ctx context.Context) 
 		mmGetPublic.mock.t.Fatalf("MessageRepositoryMock.GetPublic mock is already set by ExpectParams functions")
 	}
 
-	mmGetPublic.defaultExpectation.params = &MessageRepositoryMockGetPublicParams{ctx}
+	mmGetPublic.defaultExpectation.params = &MessageRepositoryMockGetPublicParams{ctx, limit, before}
 	mmGetPublic.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
 	for _, e := range mmGetPublic.expectations {
 		if minimock.Equal(e.params, mmGetPublic.defaultExpectation.params) {
@@ -946,8 +953,54 @@ func (mmGetPublic *mMessageRepositoryMockGetPublic) ExpectCtxParam1(ctx context.
 	return mmGetPublic
 }
 
+// ExpectLimitParam2 sets up expected param limit for MessageRepository.GetPublic
+func (mmGetPublic *mMessageRepositoryMockGetPublic) ExpectLimitParam2(limit int) *mMessageRepositoryMockGetPublic {
+	if mmGetPublic.mock.funcGetPublic != nil {
+		mmGetPublic.mock.t.Fatalf("MessageRepositoryMock.GetPublic mock is already set by Set")
+	}
+
+	if mmGetPublic.defaultExpectation == nil {
+		mmGetPublic.defaultExpectation = &MessageRepositoryMockGetPublicExpectation{}
+	}
+
+	if mmGetPublic.defaultExpectation.params != nil {
+		mmGetPublic.mock.t.Fatalf("MessageRepositoryMock.GetPublic mock is already set by Expect")
+	}
+
+	if mmGetPublic.defaultExpectation.paramPtrs == nil {
+		mmGetPublic.defaultExpectation.paramPtrs = &MessageRepositoryMockGetPublicParamPtrs{}
+	}
+	mmGetPublic.defaultExpectation.paramPtrs.limit = &limit
+	mmGetPublic.defaultExpectation.expectationOrigins.originLimit = minimock.CallerInfo(1)
+
+	return mmGetPublic
+}
+
+// ExpectBeforeParam3 sets up expected param before for MessageRepository.GetPublic
+func (mmGetPublic *mMessageRepositoryMockGetPublic) ExpectBeforeParam3(before *time.Time) *mMessageRepositoryMockGetPublic {
+	if mmGetPublic.mock.funcGetPublic != nil {
+		mmGetPublic.mock.t.Fatalf("MessageRepositoryMock.GetPublic mock is already set by Set")
+	}
+
+	if mmGetPublic.defaultExpectation == nil {
+		mmGetPublic.defaultExpectation = &MessageRepositoryMockGetPublicExpectation{}
+	}
+
+	if mmGetPublic.defaultExpectation.params != nil {
+		mmGetPublic.mock.t.Fatalf("MessageRepositoryMock.GetPublic mock is already set by Expect")
+	}
+
+	if mmGetPublic.defaultExpectation.paramPtrs == nil {
+		mmGetPublic.defaultExpectation.paramPtrs = &MessageRepositoryMockGetPublicParamPtrs{}
+	}
+	mmGetPublic.defaultExpectation.paramPtrs.before = &before
+	mmGetPublic.defaultExpectation.expectationOrigins.originBefore = minimock.CallerInfo(1)
+
+	return mmGetPublic
+}
+
 // Inspect accepts an inspector function that has same arguments as the MessageRepository.GetPublic
-func (mmGetPublic *mMessageRepositoryMockGetPublic) Inspect(f func(ctx context.Context)) *mMessageRepositoryMockGetPublic {
+func (mmGetPublic *mMessageRepositoryMockGetPublic) Inspect(f func(ctx context.Context, limit int, before *time.Time)) *mMessageRepositoryMockGetPublic {
 	if mmGetPublic.mock.inspectFuncGetPublic != nil {
 		mmGetPublic.mock.t.Fatalf("Inspect function is already set for MessageRepositoryMock.GetPublic")
 	}
@@ -972,7 +1025,7 @@ func (mmGetPublic *mMessageRepositoryMockGetPublic) Return(pa1 []models.PublicMe
 }
 
 // Set uses given function f to mock the MessageRepository.GetPublic method
-func (mmGetPublic *mMessageRepositoryMockGetPublic) Set(f func(ctx context.Context) (pa1 []models.PublicMessage, err error)) *MessageRepositoryMock {
+func (mmGetPublic *mMessageRepositoryMockGetPublic) Set(f func(ctx context.Context, limit int, before *time.Time) (pa1 []models.PublicMessage, err error)) *MessageRepositoryMock {
 	if mmGetPublic.defaultExpectation != nil {
 		mmGetPublic.mock.t.Fatalf("Default expectation is already set for the MessageRepository.GetPublic method")
 	}
@@ -988,14 +1041,14 @@ func (mmGetPublic *mMessageRepositoryMockGetPublic) Set(f func(ctx context.Conte
 
 // When sets expectation for the MessageRepository.GetPublic which will trigger the result defined by the following
 // Then helper
-func (mmGetPublic *mMessageRepositoryMockGetPublic) When(ctx context.Context) *MessageRepositoryMockGetPublicExpectation {
+func (mmGetPublic *mMessageRepositoryMockGetPublic) When(ctx context.Context, limit int, before *time.Time) *MessageRepositoryMockGetPublicExpectation {
 	if mmGetPublic.mock.funcGetPublic != nil {
 		mmGetPublic.mock.t.Fatalf("MessageRepositoryMock.GetPublic mock is already set by Set")
 	}
 
 	expectation := &MessageRepositoryMockGetPublicExpectation{
 		mock:               mmGetPublic.mock,
-		params:             &MessageRepositoryMockGetPublicParams{ctx},
+		params:             &MessageRepositoryMockGetPublicParams{ctx, limit, before},
 		expectationOrigins: MessageRepositoryMockGetPublicExpectationOrigins{origin: minimock.CallerInfo(1)},
 	}
 	mmGetPublic.expectations = append(mmGetPublic.expectations, expectation)
@@ -1030,17 +1083,17 @@ func (mmGetPublic *mMessageRepositoryMockGetPublic) invocationsDone() bool {
 }
 
 // GetPublic implements mm_repository.MessageRepository
-func (mmGetPublic *MessageRepositoryMock) GetPublic(ctx context.Context) (pa1 []models.PublicMessage, err error) {
+func (mmGetPublic *MessageRepositoryMock) GetPublic(ctx context.Context, limit int, before *time.Time) (pa1 []models.PublicMessage, err error) {
 	mm_atomic.AddUint64(&mmGetPublic.beforeGetPublicCounter, 1)
 	defer mm_atomic.AddUint64(&mmGetPublic.afterGetPublicCounter, 1)
 
 	mmGetPublic.t.Helper()
 
 	if mmGetPublic.inspectFuncGetPublic != nil {
-		mmGetPublic.inspectFuncGetPublic(ctx)
+		mmGetPublic.inspectFuncGetPublic(ctx, limit, before)
 	}
 
-	mm_params := MessageRepositoryMockGetPublicParams{ctx}
+	mm_params := MessageRepositoryMockGetPublicParams{ctx, limit, before}
 
 	// Record call args
 	mmGetPublic.GetPublicMock.mutex.Lock()
@@ -1059,13 +1112,23 @@ func (mmGetPublic *MessageRepositoryMock) GetPublic(ctx context.Context) (pa1 []
 		mm_want := mmGetPublic.GetPublicMock.defaultExpectation.params
 		mm_want_ptrs := mmGetPublic.GetPublicMock.defaultExpectation.paramPtrs
 
-		mm_got := MessageRepositoryMockGetPublicParams{ctx}
+		mm_got := MessageRepositoryMockGetPublicParams{ctx, limit, before}
 
 		if mm_want_ptrs != nil {
 
 			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
 				mmGetPublic.t.Errorf("MessageRepositoryMock.GetPublic got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
 					mmGetPublic.GetPublicMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.limit != nil && !minimock.Equal(*mm_want_ptrs.limit, mm_got.limit) {
+				mmGetPublic.t.Errorf("MessageRepositoryMock.GetPublic got unexpected parameter limit, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetPublic.GetPublicMock.defaultExpectation.expectationOrigins.originLimit, *mm_want_ptrs.limit, mm_got.limit, minimock.Diff(*mm_want_ptrs.limit, mm_got.limit))
+			}
+
+			if mm_want_ptrs.before != nil && !minimock.Equal(*mm_want_ptrs.before, mm_got.before) {
+				mmGetPublic.t.Errorf("MessageRepositoryMock.GetPublic got unexpected parameter before, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetPublic.GetPublicMock.defaultExpectation.expectationOrigins.originBefore, *mm_want_ptrs.before, mm_got.before, minimock.Diff(*mm_want_ptrs.before, mm_got.before))
 			}
 
 		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
@@ -1080,9 +1143,9 @@ func (mmGetPublic *MessageRepositoryMock) GetPublic(ctx context.Context) (pa1 []
 		return (*mm_results).pa1, (*mm_results).err
 	}
 	if mmGetPublic.funcGetPublic != nil {
-		return mmGetPublic.funcGetPublic(ctx)
+		return mmGetPublic.funcGetPublic(ctx, limit, before)
 	}
-	mmGetPublic.t.Fatalf("Unexpected call to MessageRepositoryMock.GetPublic. %v", ctx)
+	mmGetPublic.t.Fatalf("Unexpected call to MessageRepositoryMock.GetPublic. %v %v %v", ctx, limit, before)
 	return
 }
 

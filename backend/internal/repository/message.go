@@ -2,10 +2,12 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"app/internal/models"
 	"app/internal/repository/sqlcgen"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -14,7 +16,7 @@ import (
 type MessageRepository interface {
 	Create(ctx context.Context, conversationID, senderID, ciphertext, nonce string) (*models.Message, error)
 	GetByConversationID(ctx context.Context, conversationID string) ([]models.Message, error)
-	GetPublic(ctx context.Context) ([]models.PublicMessage, error)
+	GetPublic(ctx context.Context, limit int, before *time.Time) ([]models.PublicMessage, error)
 }
 
 type postgresMessageRepository struct {
@@ -50,8 +52,11 @@ func (r *postgresMessageRepository) GetByConversationID(ctx context.Context, con
 	return msgs, nil
 }
 
-func (r *postgresMessageRepository) GetPublic(ctx context.Context) ([]models.PublicMessage, error) {
-	rows, err := r.q.GetPublicMessages(ctx)
+func (r *postgresMessageRepository) GetPublic(ctx context.Context, limit int, before *time.Time) ([]models.PublicMessage, error) {
+	rows, err := r.q.GetPublicMessages(ctx, &sqlcgen.GetPublicMessagesParams{
+		Before: toPgTimestamp(before),
+		Limit:  int32(limit),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -76,4 +81,11 @@ func toMessage(r *sqlcgen.Message) *models.Message {
 		Nonce:          r.Nonce,
 		CreatedAt:      r.CreatedAt.Time,
 	}
+}
+
+func toPgTimestamp(t *time.Time) pgtype.Timestamptz {
+	if t == nil {
+		return pgtype.Timestamptz{Valid: false}
+	}
+	return pgtype.Timestamptz{Time: *t, Valid: true}
 }

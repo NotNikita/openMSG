@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"time"
 
 	"app/internal/models"
 	"app/internal/repository"
@@ -11,7 +12,7 @@ import (
 type MessageService interface {
 	SendMessage(ctx context.Context, conversationID, senderID, ciphertext, nonce string) (*models.Message, error)
 	ListMessages(ctx context.Context, conversationID string) ([]models.Message, error)
-	ListPublicMessages(ctx context.Context) ([]models.PublicMessage, error)
+	ListPublicMessages(ctx context.Context, limit int, before *time.Time) ([]models.PublicMessage, error)
 }
 
 type messageService struct {
@@ -45,6 +46,9 @@ func (s *messageService) ListMessages(ctx context.Context, conversationID string
 	return s.repo.GetByConversationID(ctx, conversationID)
 }
 
-func (s *messageService) ListPublicMessages(ctx context.Context) ([]models.PublicMessage, error) {
-	return s.repo.GetPublic(ctx)
+func (s *messageService) ListPublicMessages(ctx context.Context, limit int, before *time.Time) ([]models.PublicMessage, error) {
+	if limit <= 0 || limit > 100 {
+		limit = 100
+	}
+	return s.repo.GetPublic(ctx, limit, before)
 }

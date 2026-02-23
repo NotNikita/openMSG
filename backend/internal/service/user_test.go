@@ -75,6 +75,40 @@ func TestUserService_CreateUser(t *testing.T) {
 	})
 }
 
+func TestUserService_ListUsers(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("returns users with limit and offset", func(t *testing.T) {
+		repo := mocks.NewUserRepositoryMock(t)
+		repo.GetAllMock.Expect(ctx, 10, 20).
+			Return([]models.User{{ID: "uuid-1"}}, nil)
+
+		svc := service.NewUserService(repo)
+		users, err := svc.ListUsers(ctx, 10, 20)
+
+		require.NoError(t, err)
+		assert.Len(t, users, 1)
+	})
+
+	t.Run("clamps limit above 100 to 100", func(t *testing.T) {
+		repo := mocks.NewUserRepositoryMock(t)
+		repo.GetAllMock.Expect(ctx, 100, 0).Return([]models.User{}, nil)
+
+		svc := service.NewUserService(repo)
+		_, err := svc.ListUsers(ctx, 999, 0)
+		require.NoError(t, err)
+	})
+
+	t.Run("clamps non-positive limit to 100", func(t *testing.T) {
+		repo := mocks.NewUserRepositoryMock(t)
+		repo.GetAllMock.Expect(ctx, 100, 0).Return([]models.User{}, nil)
+
+		svc := service.NewUserService(repo)
+		_, err := svc.ListUsers(ctx, 0, 0)
+		require.NoError(t, err)
+	})
+}
+
 func TestUserService_GetUser(t *testing.T) {
 	ctx := context.Background()
 

@@ -11,7 +11,7 @@ import (
 type UserService interface {
 	CreateUser(ctx context.Context, nickname, publicKey, avatar string) (*models.User, error)
 	GetUser(ctx context.Context, id string) (*models.User, error)
-	ListUsers(ctx context.Context) ([]models.User, error)
+	ListUsers(ctx context.Context, limit, offset int) ([]models.User, error)
 }
 
 type userService struct {
@@ -42,6 +42,9 @@ func (s *userService) GetUser(ctx context.Context, id string) (*models.User, err
 	return s.repo.GetByID(ctx, id)
 }
 
-func (s *userService) ListUsers(ctx context.Context) ([]models.User, error) {
-	return s.repo.GetAll(ctx)
+func (s *userService) ListUsers(ctx context.Context, limit, offset int) ([]models.User, error) {
+	if limit <= 0 || limit > 100 {
+		limit = 100
+	}
+	return s.repo.GetAll(ctx, limit, offset)
 }

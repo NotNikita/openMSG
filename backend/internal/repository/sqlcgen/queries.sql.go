@@ -72,10 +72,16 @@ const getAllUsers = `-- name: GetAllUsers :many
 SELECT id, nickname, public_key, avatar, created_at
 FROM users
 ORDER BY created_at DESC
+LIMIT $1 OFFSET $2
 `
 
-func (q *Queries) GetAllUsers(ctx context.Context) ([]*User, error) {
-	rows, err := q.db.Query(ctx, getAllUsers)
+type GetAllUsersParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) GetAllUsers(ctx context.Context, arg *GetAllUsersParams) ([]*User, error) {
+	rows, err := q.db.Query(ctx, getAllUsers, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -221,8 +227,15 @@ JOIN users u_recip ON (
     (c.user_a_id = m.sender_id AND u_recip.id = c.user_b_id) OR
     (c.user_b_id = m.sender_id AND u_recip.id = c.user_a_id)
 )
+WHERE ($1::timestamptz IS NULL OR m.created_at < $1)
 ORDER BY m.created_at DESC
+LIMIT $2
 `
+
+type GetPublicMessagesParams struct {
+	Before pgtype.Timestamptz
+	Limit  int32
+}
 
 type GetPublicMessagesRow struct {
 	SenderNickname    string
@@ -231,8 +244,8 @@ type GetPublicMessagesRow struct {
 	CreatedAt         pgtype.Timestamptz
 }
 
-func (q *Queries) GetPublicMessages(ctx context.Context) ([]*GetPublicMessagesRow, error) {
-	rows, err := q.db.Query(ctx, getPublicMessages)
+func (q *Queries) GetPublicMessages(ctx context.Context, arg *GetPublicMessagesParams) ([]*GetPublicMessagesRow, error) {
+	rows, err := q.db.Query(ctx, getPublicMessages, arg.Before, arg.Limit)
 	if err != nil {
 		return nil, err
 	}

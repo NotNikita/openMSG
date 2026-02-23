@@ -11,7 +11,8 @@ WHERE id = $1;
 -- name: GetAllUsers :many
 SELECT id, nickname, public_key, avatar, created_at
 FROM users
-ORDER BY created_at DESC;
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2;
 
 -- name: GetOrCreateConversation :one
 INSERT INTO conversations (user_a_id, user_b_id)
@@ -54,4 +55,6 @@ JOIN users u_recip ON (
     (c.user_a_id = m.sender_id AND u_recip.id = c.user_b_id) OR
     (c.user_b_id = m.sender_id AND u_recip.id = c.user_a_id)
 )
-ORDER BY m.created_at DESC;
+WHERE (sqlc.narg('before')::timestamptz IS NULL OR m.created_at < sqlc.narg('before'))
+ORDER BY m.created_at DESC
+LIMIT sqlc.arg('limit');
